@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: comako
+      POSTGRES_USER: comako
+      POSTGRES_PASSWORD: comako
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: comako
+      RABBITMQ_DEFAULT_PASS: comako
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  ftp:
+    image: stilliard/pure-ftpd
+    environment:
+      PUBLICHOST: "localhost"
+      FTP_USER_NAME: comako
+      FTP_USER_PASS: comako
+      FTP_USER_HOME: /home/comako
+    ports:
+      - "21:21"
+      - "30000-30009:30000-30009"
+    volumes:
+      - ftp_data:/home/comako
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "21"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  volumes:
+    pgdata:
+    rabbitmq_data:
+    ftp_data:
